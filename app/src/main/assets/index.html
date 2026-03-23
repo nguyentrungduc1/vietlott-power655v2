@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vietlott Power 6/55</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--red:#e8192c;--red-dark:#b5101e;--red-glow:rgba(232,25,44,0.35);--gold:#f5c842;--green:#22c97a;--blue:#3b82f6;--bg:#0e0e12;--bg2:#16161d;--bg3:#1e1e28;--text:#f0f0f5;--muted:#7a7a90;--border:rgba(255,255,255,0.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:6rem 1rem 4rem;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.6}
+body::after{content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(232,25,44,0.12) 0%,transparent 70%);pointer-events:none;z-index:0}
+.container{position:relative;z-index:1;width:100%;max-width:700px}
+.header{text-align:center;margin-bottom:2rem}
+.header-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:8px;font-weight:600}
+.header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.4rem,7vw,4rem);letter-spacing:.04em;line-height:1}
+.header h1 span{color:var(--red)}
+.header-sub{margin-top:6px;font-size:12px;color:var(--muted)}
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:1.5rem;justify-content:center;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap}
+.tab.active{background:var(--red);color:white;box-shadow:0 0 16px var(--red-glow)}
+.tab:hover:not(.active){color:var(--text);background:var(--bg3)}
+/* CARDS */
+.machine{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:1.25rem;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.machine::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent)}
+.machine.gold-top::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.machine.green-top::before{background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.machine.blue-top::before{background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+.mtitle{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-red{background:var(--red);box-shadow:0 0 6px var(--red)}
+.dot-gold{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot-blue{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+/* BALLS */
+.balls-grid{display:flex;flex-wrap:wrap;gap:7px}
+.ball{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;user-select:none;flex-shrink:0}
+.ball::after{content:'';position:absolute;top:4px;left:7px;width:11px;height:6px;background:rgba(255,255,255,0.18);border-radius:50%;transform:rotate(-20deg)}
+.ball:hover{transform:scale(1.1)}
+.ball.hot{background:radial-gradient(circle at 35% 35%,#ff4d5e,var(--red-dark));color:white;box-shadow:0 2px 10px rgba(232,25,44,0.4)}
+.ball.cold{background:radial-gradient(circle at 35% 35%,#555570,#2a2a40);color:#b0b0d0;border:1px solid rgba(255,255,255,0.08)}
+.ball.selected{transform:scale(1.15);box-shadow:0 0 18px var(--gold),0 0 36px rgba(245,200,66,0.3);outline:2px solid var(--gold)}
+/* BUTTONS */
+.spin-btn{position:relative;padding:15px 44px;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.1em;background:var(--red);color:white;border:none;border-radius:14px;cursor:pointer;overflow:hidden;transition:transform .1s,box-shadow .2s;box-shadow:0 4px 24px var(--red-glow)}
+.spin-btn::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transition:left .5s}
+.spin-btn:hover::before{left:150%}
+.spin-btn:hover{transform:translateY(-2px);box-shadow:0 6px 32px var(--red-glow),0 0 0 4px rgba(232,25,44,0.15)}
+.spin-btn:active{transform:scale(0.97)}
+.spin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.spin-btn.green-btn{background:#1a7a4a;box-shadow:0 4px 20px rgba(34,201,122,0.3)}
+.spin-btn.green-btn:hover{box-shadow:0 6px 32px rgba(34,201,122,0.4)}
+.btn-sm{padding:7px 14px;font-size:12px;font-weight:500;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:transparent;color:var(--muted)}
+.btn-sm:hover{background:var(--bg3);color:var(--text)}
+.btn-sm.primary{background:var(--red);border-color:var(--red);color:white}
+.btn-sm.primary:hover{opacity:.85}
+.btn-sm.success{background:#1a7a4a;border-color:#22c97a;color:#22c97a}
+.btn-sm.success:hover{opacity:.85}
+/* RESULT */
+.result-panel{background:var(--bg3);border:1px solid var(--border);border-radius:18px;padding:1.25rem;display:none;position:relative;overflow:hidden}
+.result-panel.visible{display:block}
+.result-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.result-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.result-count{font-size:11px;color:var(--muted)}
+.result-balls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:1rem}
+.res-ball{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;position:relative;animation:ballIn .4s cubic-bezier(.34,1.56,.64,1) both}
+.res-ball::after{content:'';position:absolute;top:6px;left:11px;width:16px;height:9px;background:rgba(255,255,255,0.2);border-radius:50%;transform:rotate(-20deg)}
+.res-ball.hot{background:radial-gradient(circle at 35% 35%,#ff4d5e,var(--red-dark));color:white;box-shadow:0 4px 18px rgba(232,25,44,0.5)}
+.res-ball.cold{background:radial-gradient(circle at 35% 35%,#4a4a6a,#1e1e35);color:#c0c0e0;border:1px solid rgba(255,255,255,0.12)}
+.res-ball.smart{background:radial-gradient(circle at 35% 35%,#2ee89a,#0f6a42);color:#fff;box-shadow:0 4px 18px rgba(34,201,122,0.5)}
+@keyframes ballIn{from{transform:translateY(-28px) scale(0.5);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.result-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:9px;height:9px;border-radius:50%}
+.legend-dot.hot{background:var(--red)}
+.legend-dot.cold{background:#4a4a6a}
+.legend-dot.smart{background:var(--green)}
+/* SCORE TAGS */
+.score-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.stag{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:5px;font-weight:600}
+.stag.ok{background:rgba(34,201,122,0.12);color:var(--green);border:1px solid rgba(34,201,122,0.25)}
+.stag.warn{background:rgba(245,200,66,0.12);color:var(--gold);border:1px solid rgba(245,200,66,0.25)}
+/* COUNTER ROW */
+.counter-row{display:flex;gap:8px;margin-bottom:1rem}
+.counter-card{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.65rem .75rem;text-align:center}
+.counter-num{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;line-height:1;margin-bottom:1px}
+.counter-num.red{color:var(--red)}
+.counter-num.gray{color:#666680}
+.counter-num.gold{color:var(--gold)}
+.counter-desc{font-size:10px;color:var(--muted)}
+/* MODE PANELS */
+.mode-panel{display:none}
+.mode-panel.active{display:block}
+/* HISTORY */
+.history-section{margin-top:1.25rem}
+.section-title{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between}
+.history-list{display:flex;flex-direction:column;gap:7px}
+.history-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.65rem 1rem;display:flex;align-items:center;gap:7px;flex-wrap:wrap;animation:fadeIn .3s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.history-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.history-num.hot{background:radial-gradient(circle at 35% 35%,#ff4d5e,var(--red-dark));color:white}
+.history-num.cold{background:#2a2a40;color:#9090b0;border:1px solid rgba(255,255,255,0.08)}
+.history-time{margin-left:auto;font-size:10px;color:var(--muted)}
+/* STATS */
+.stats-toolbar{display:flex;gap:7px;margin-bottom:.9rem;flex-wrap:wrap;align-items:center}
+.stats-info{font-size:11px;color:var(--muted);flex:1;min-width:100px}
+.stat-row{display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.stat-ball{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.stat-ball.hot{background:radial-gradient(circle at 35% 35%,#ff4d5e,#b5101e);color:white}
+.stat-ball.cold{background:radial-gradient(circle at 35% 35%,#4a4a6a,#1e1e35);color:#9090b0}
+.stat-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;cursor:pointer}
+.stat-bar-fill{height:100%;border-radius:4px;transition:width .2s ease;pointer-events:none}
+.stat-freq-input{width:44px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-weight:600;text-align:center;padding:3px;outline:none}
+.stat-freq-input:focus{border-color:var(--gold)}
+.stat-rank{font-size:10px;color:var(--muted);width:16px;text-align:right;flex-shrink:0}
+.threshold-row{display:flex;align-items:center;gap:8px;margin-bottom:.9rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:.6rem 1rem;flex-wrap:wrap}
+.threshold-row label{font-size:11px;color:var(--muted)}
+.threshold-input{width:46px;background:var(--bg2);border:1px solid rgba(245,200,66,0.3);border-radius:6px;color:var(--gold);font-size:13px;font-weight:600;text-align:center;padding:3px;outline:none}
+.unsaved-badge{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(245,200,66,0.12);color:var(--gold);border:1px solid rgba(245,200,66,0.25);display:none}
+.unsaved-badge.show{display:inline-block}
+/* DRAWS INPUT */
+.draws-grid{display:flex;flex-direction:column;gap:6px}
+.draw-row{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 10px}
+.draw-label{font-size:10px;color:var(--muted);width:28px;flex-shrink:0;font-weight:600}
+.draw-inputs{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.draw-inp{width:38px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-weight:600;text-align:center;padding:4px 2px;outline:none;transition:border-color .15s}
+.draw-inp:focus{border-color:var(--gold)}
+.draw-inp.filled{border-color:rgba(232,25,44,0.4);color:#ff8090}
+.draw-inp.err{border-color:rgba(232,25,44,0.8);background:rgba(232,25,44,0.08)}
+/* ABSENT TABLE */
+.absent-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem}
+.absent-ball{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;position:relative}
+.absent-ball::after{content:'';position:absolute;top:3px;left:6px;width:9px;height:5px;background:rgba(255,255,255,0.18);border-radius:50%;transform:rotate(-20deg)}
+.ab-0{background:radial-gradient(circle at 35% 35%,#ff4d5e,#b5101e);color:white} /* missing 16+ kỳ */
+.ab-1{background:radial-gradient(circle at 35% 35%,#ff8c42,#a05020);color:white}
+.ab-2{background:radial-gradient(circle at 35% 35%,#f5c842,#a08020);color:#1a1000}
+.ab-3{background:radial-gradient(circle at 35% 35%,#555570,#2a2a40);color:#b0b0d0;border:1px solid rgba(255,255,255,0.08)}
+.absent-count{font-size:9px;position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);color:var(--muted);white-space:nowrap}
+.absent-wrap{position:relative;margin-bottom:18px}
+/* SMART CRITERIA */
+.criteria-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.crit-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.crit-icon{font-size:14px;width:20px;text-align:center}
+.crit-label{color:var(--text);flex:1}
+.crit-val{font-size:11px;color:var(--muted)}
+.prog-bar{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;width:60px}
+.prog-fill{height:100%;border-radius:2px;background:var(--green)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-eyebrow">● Power 6/55 — Phân tích đa tiêu chí</div>
+    <h1>VIETLOTT<br><span>SỐ MAY MẮN</span></h1>
+    <div class="header-sub">Thống kê · Lịch sử kỳ quay · Quay thông minh · Ngưỡng ngọt: 13–17 kỳ (P=12.73%)</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchMode('auto')">🎲 Quay thường</button>
+    <button class="tab" onclick="switchMode('smart')">🧠 Quay thông minh</button>
+    <button class="tab" onclick="switchMode('manual')">✋ Chọn tay</button>
+    <button class="tab" onclick="switchMode('stats')">📊 Thống kê</button>
+  </div>
+
+  <!-- ===== AUTO ===== -->
+  <div class="mode-panel active" id="panel-auto">
+    <div class="machine">
+      <div class="mtitle"><span class="dot dot-red"></span> Tỉ lệ hay ra / ít ra</div>
+      <div class="counter-row">
+        <div class="counter-card">
+          <div class="counter-num red" id="hot-count">3</div>
+          <div class="counter-desc">Số hay ra</div>
+          <input type="range" min="0" max="6" value="3" id="hot-slider" oninput="updateSlider()" style="width:100%;margin-top:5px">
+        </div>
+        <div class="counter-card">
+          <div class="counter-num gray" id="cold-count">3</div>
+          <div class="counter-desc">Số ít ra</div>
+        </div>
+        <div class="counter-card">
+          <div class="counter-num gold">6</div>
+          <div class="counter-desc">Tổng số</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:center" id="auto-group-info"></div>
+    </div>
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <button class="spin-btn" id="spin-btn" onclick="spinAuto()">🎰 QUAY NGAY</button>
+    </div>
+    <div class="result-panel" id="result-panel-auto">
+      <div class="result-header">
+        <div class="result-label">✨ Bộ số gợi ý</div>
+        <div class="result-count" id="result-count-auto"></div>
+      </div>
+      <div class="result-balls" id="result-balls-auto"></div>
+      <div class="result-legend">
+        <div class="legend-item"><div class="legend-dot hot"></div> Hay ra</div>
+        <div class="legend-item"><div class="legend-dot cold"></div> Ít ra</div>
+      </div>
+    </div>
+    <div class="history-section" id="spin-history-section" style="display:none">
+      <div class="section-title"><span>Lịch sử quay</span><button class="btn-sm" onclick="clearSpinHistory()">Xóa</button></div>
+      <div class="history-list" id="spin-history-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== SMART ===== -->
+  <div class="mode-panel" id="panel-smart">
+    <div class="machine blue-top">
+      <div class="mtitle"><span class="dot dot-blue"></span> Chiến lược đa tiêu chí</div>
+      <div class="criteria-list">
+        <div class="crit-row"><div class="crit-icon">⏳</div><div class="crit-label">Vắng lâu ≥ 13 kỳ — điểm ngọt P=12.73% (7 số/kỳ)</div></div>
+        <div class="crit-row"><div class="crit-icon">📈</div><div class="crit-label">Tần suất năm cao (thuộc top hay ra)</div></div>
+        <div class="crit-row"><div class="crit-icon">⚖️</div><div class="crit-label">Tổng 6 số trong khoảng 100–200</div></div>
+        <div class="crit-row"><div class="crit-icon">🔢</div><div class="crit-label">3 số chẵn + 3 số lẻ</div></div>
+        <div class="crit-row"><div class="crit-icon">🗺️</div><div class="crit-label">Trải đều 3 vùng: 1–18 · 19–36 · 37–55</div></div>
+      </div>
+      <div id="smart-draws-warning" style="font-size:11px;color:var(--gold);margin-bottom:.75rem;display:none">
+        ⚠️ Chưa có đủ dữ liệu kỳ quay — tiêu chí "vắng lâu" sẽ dùng tần suất thay thế.
+      </div>
+      <div style="text-align:center">
+        <button class="spin-btn green-btn" id="smart-btn" onclick="spinSmart()">🧠 QUAY THÔNG MINH</button>
+      </div>
+    </div>
+    <div class="result-panel" id="result-panel-smart">
+      <div class="result-header">
+        <div class="result-label">🎯 Bộ số tối ưu</div>
+        <div class="result-count" id="result-count-smart"></div>
+      </div>
+      <div class="result-balls" id="result-balls-smart"></div>
+      <div class="score-tags" id="smart-score-tags"></div>
+    </div>
+    <div class="history-section" id="smart-history-section" style="display:none">
+      <div class="section-title"><span>Lịch sử quay thông minh</span><button class="btn-sm" onclick="clearSmartHistory()">Xóa</button></div>
+      <div class="history-list" id="smart-history-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== MANUAL ===== -->
+  <div class="mode-panel" id="panel-manual">
+    <div class="machine">
+      <div class="mtitle"><span class="dot dot-red"></span> Nhóm hay ra — <span id="manual-hot-label"></span></div>
+      <div class="balls-grid" id="manual-hot"></div>
+    </div>
+    <div class="machine">
+      <div class="mtitle"><span class="dot" style="background:#555570"></span> Nhóm ít ra — <span id="manual-cold-label"></span></div>
+      <div class="balls-grid" id="manual-cold"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:.9rem;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 11px">
+        <span style="font-size:11px;color:var(--muted)">Đã chọn:</span>
+        <span id="manual-selected-count" style="font-size:13px;font-weight:600;color:var(--gold)">0</span>
+        <span style="font-size:11px;color:var(--muted)">/ 6</span>
+      </div>
+      <button class="btn-sm" onclick="clearManual()">Xóa chọn</button>
+      <button class="spin-btn" style="padding:9px 22px;font-size:.95rem" onclick="confirmManual()">Xác nhận</button>
+    </div>
+    <div class="result-panel" id="result-panel-manual">
+      <div class="result-header"><div class="result-label">✨ Bộ số bạn chọn</div></div>
+      <div class="result-balls" id="result-balls-manual"></div>
+    </div>
+  </div>
+
+  <!-- ===== STATS ===== -->
+  <div class="mode-panel" id="panel-stats">
+
+    <!-- DRAWS INPUT -->
+    <div class="machine gold-top">
+      <div class="mtitle">
+        <span class="dot dot-gold"></span>
+        Nhập kết quả 16 kỳ quay gần nhất
+        <span class="unsaved-badge" id="draws-badge">● Chưa lưu</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:.75rem">Kỳ 1 = gần nhất. Mỗi kỳ nhập 7 số (1–55, gồm số Power). Dùng Tab để di chuyển nhanh.</div>
+      <div class="draws-grid" id="draws-grid"></div>
+      <div style="display:flex;gap:7px;margin-top:.9rem;flex-wrap:wrap;align-items:center">
+        <button class="btn-sm" onclick="clearAllDraws()">Xóa trắng</button>
+        <button class="btn-sm success" onclick="saveDraws()">✓ Lưu kỳ quay</button>
+      </div>
+    </div>
+
+    <!-- ABSENT ANALYSIS -->
+    <div class="machine green-top" id="absent-machine" style="display:none">
+      <div class="mtitle"><span class="dot dot-green"></span> Phân tích vắng mặt (16 kỳ gần nhất)</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:.75rem">
+        🔴 Vắng ≥16 kỳ (cực lạnh) &nbsp;|&nbsp; 🟠 Vắng 13–15 kỳ (điểm ngọt ★) &nbsp;|&nbsp; 🟡 Vắng 6–12 kỳ &nbsp;|&nbsp; ⚫ Đã ra gần đây
+      </div>
+      <div class="absent-grid" id="absent-grid"></div>
+    </div>
+
+    <!-- FREQ STATS -->
+    <div class="machine">
+      <div class="mtitle">
+        <span class="dot dot-gold"></span>
+        Tần suất 55 số (1 năm)
+        <span class="unsaved-badge" id="unsaved-badge">● Chưa áp dụng</span>
+      </div>
+      <div class="threshold-row">
+        <label>Top</label>
+        <input type="number" class="threshold-input" id="threshold-input" value="28" min="1" max="54" oninput="onThresholdChange()">
+        <label>số = nhóm hay ra 🔴</label>
+        <span style="font-size:10px;color:var(--muted)" id="threshold-desc">→ 27 số còn lại = ít ra</span>
+      </div>
+      <div class="stats-toolbar">
+        <div class="stats-info">Nhấn thanh: +1 &nbsp;|&nbsp; Nhấn giữ: −1 (giữ lâu trừ nhiều) &nbsp;|&nbsp; Hoặc gõ trực tiếp</div>
+        <button class="btn-sm" onclick="resetStats()">↺ Gốc</button>
+        <button class="btn-sm primary" onclick="saveStats()">✓ Áp dụng</button>
+      </div>
+      <div id="stats-list" style="display:flex;flex-direction:column;gap:1px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== DEFAULT DATA ========== */
+const DEFAULT_DATA=[
+  {n:16,f:24},{n:14,f:23},{n:19,f:22},{n:29,f:22},
+  {n:30,f:22},{n:41,f:22},{n:55,f:21},{n:22,f:21},
+  {n:26,f:20},{n:32,f:20},{n:34,f:20},{n:42,f:20},
+  {n:43,f:20},{n:48,f:20},{n:36,f:19},{n:40,f:19},
+  {n:24,f:19},{n:13,f:19},{n:3,f:19},{n:8,f:18},
+  {n:33,f:18},{n:27,f:18},{n:31,f:18},{n:45,f:18},
+  {n:53,f:17},{n:39,f:17},{n:44,f:17},{n:20,f:17},
+  {n:21,f:17},{n:9,f:17},{n:7,f:17},{n:12,f:17},
+  {n:5,f:16},{n:15,f:16},{n:10,f:16},{n:50,f:16},
+  {n:54,f:15},{n:46,f:15},{n:47,f:15},{n:52,f:15},
+  {n:11,f:15},{n:18,f:15},{n:23,f:14},{n:28,f:14},
+  {n:35,f:14},{n:17,f:14},{n:51,f:14},{n:37,f:14},
+  {n:38,f:13},{n:6,f:13},{n:2,f:13},{n:49,f:12},
+  {n:1,f:11},{n:25,f:11},{n:4,f:7}
+];
+const NUM_DRAWS=16;
+
+/* ========== STATE ========== */
+let workingData=DEFAULT_DATA.map(d=>({...d}));
+let threshold=28;
+let hotCount=3;
+let spinHistory=[];
+let smartHistory=[];
+let manualSelected=[];
+let draws=[]; // array of 16 arrays of 7 nums each (or empty)
+
+/* ========== HELPERS ========== */
+function pad(n){return String(n).padStart(2,'0')}
+function getHot(){return getSorted().slice(0,threshold).map(d=>d.n)}
+function getCold(){return getSorted().slice(threshold).map(d=>d.n)}
+function getSorted(){return [...workingData].sort((a,b)=>b.f-a.f||a.n-b.n)}
+function getMaxF(){return Math.max(...workingData.map(d=>d.f))||1}
+function pickRandom(arr,n){
+  const copy=[...arr],out=[];
+  for(let i=0;i<n&&copy.length;i++){const idx=Math.floor(Math.random()*copy.length);out.push(copy.splice(idx,1)[0])}
+  return out;
+}
+function zone(n){if(n<=18)return 0;if(n<=36)return 1;return 2}
+function isEven(n){return n%2===0}
+function sumArr(a){return a.reduce((s,v)=>s+v,0)}
+
+/* ========== ABSENT CALC ========== */
+function calcAbsent(){
+  // returns map: number -> kỳ vắng (0 = ra trong kỳ 1, 16 = chưa ra 16 kỳ)
+  const absent={};
+  for(let n=1;n<=55;n++) absent[n]=NUM_DRAWS;
+  const validDraws=draws.filter(d=>d&&d.length===7);
+  validDraws.forEach((draw,kIdx)=>{
+    draw.forEach(n=>{
+      if(absent[n]===NUM_DRAWS) absent[n]=kIdx; // first appearance from recent
+    });
+  });
+  return absent;
+}
+
+function hasEnoughDraws(){
+  return draws.filter(d=>d&&d.length===7).length>=4;
+}
+
+/* ========== SMART SCORE ========== */
+function scoreSet(nums){
+  let score=0;
+  const absent=calcAbsent();
+  const hot=getHot();
+  const freqRank={};
+  getSorted().forEach((d,i)=>freqRank[d.n]=i);
+
+  // 1. Tần suất năm cao — ưu tiên cao nhất
+  nums.forEach(n=>{
+    const rank=freqRank[n]||50;
+    if(rank<10) score+=40;
+    else if(rank<20) score+=28;
+    else if(rank<threshold) score+=15;
+    else score-=8;
+  });
+
+  // 2. Vắng lâu — điểm ngọt P=12.73%: 13–17 kỳ
+  nums.forEach(n=>{
+    const ab=absent[n]||0;
+    if(ab>=16) score+=18;
+    else if(ab>=13) score+=24; // điểm ngọt nhất
+    else if(ab>=10) score+=14;
+    else if(ab>=6) score+=5;
+    else score-=3;
+  });
+
+  // 3. Tổng hợp lý 100–200
+  const s=sumArr(nums);
+  if(s>=100&&s<=200) score+=25;
+  else if(s>=80&&s<=220) score+=10;
+  else score-=15;
+
+  // 4. 3 chẵn + 3 lẻ (hoặc 2+4 / 4+2 nhẹ hơn)
+  const evens=nums.filter(n=>isEven(n)).length;
+  if(evens===3) score+=25;
+  else if(evens===2||evens===4) score+=10;
+  else score-=10;
+
+  // 5. Trải 3 vùng (mỗi vùng ≥ 1 số)
+  const zones=[0,0,0];
+  nums.forEach(n=>zones[zone(n)]++);
+  const minZone=Math.min(...zones);
+  if(minZone>=1) score+=20;
+  if(minZone>=2) score+=10;
+  if(zones.every(z=>z===2)) score+=5; // đều nhất
+
+  return score;
+}
+
+function buildScoredResult(nums){
+  const absent=calcAbsent();
+  const s=sumArr(nums);
+  const evens=nums.filter(n=>isEven(n)).length;
+  const zones=[0,0,0];
+  nums.forEach(n=>zones[zone(n)]++);
+  const tags=[];
+  const sumOk=s>=100&&s<=200;
+  const evenOk=evens===3;
+  const zoneOk=Math.min(...zones)>=1;
+  const absentOk=nums.some(n=>(absent[n]||0)>=13);
+  const hot=getHot();
+  const hotCount=nums.filter(n=>hot.includes(n)).length;
+  const freqOk=hotCount>=4;
+  tags.push({ok:sumOk,label:`Tổng: ${s}`,sub:sumOk?'✓ 100–200':'⚠ ngoài khoảng'});
+  tags.push({ok:evenOk,label:`Chẵn/lẻ: ${evens}/${6-evens}`,sub:evenOk?'✓ cân bằng':'⚠ lệch'});
+  tags.push({ok:zoneOk,label:`Vùng: ${zones.join('/')}`,sub:zoneOk?'✓ trải đều':'⚠ tập trung'});
+  tags.push({ok:freqOk,label:`Tần suất: ${hotCount}/6 top`,sub:freqOk?'✓ năm cao':'⚠ ít số hot'});
+  if(hasEnoughDraws()) tags.push({ok:absentOk,label:'Vắng lâu',sub:absentOk?'✓ có số vắng':'⚠ số vừa ra'});
+  return tags;
+}
+
+/* ========== SPIN AUTO ========== */
+function updateSlider(){
+  hotCount=parseInt(document.getElementById('hot-slider').value);
+  document.getElementById('hot-count').textContent=hotCount;
+  document.getElementById('cold-count').textContent=6-hotCount;
+  const h=getHot(),c=getCold();
+  document.getElementById('auto-group-info').textContent=`Hay ra: ${h.length} số · Ít ra: ${c.length} số`;
+}
+
+function spinAuto(){
+  const btn=document.getElementById('spin-btn');
+  btn.disabled=true;btn.textContent='⏳ ĐANG QUAY...';
+  const panel=document.getElementById('result-panel-auto');
+  const rb=document.getElementById('result-balls-auto');
+  rb.innerHTML='';panel.classList.remove('visible');
+  const hot=getHot(),cold=getCold();
+  const nums=[...pickRandom(hot,hotCount),...pickRandom(cold,6-hotCount)].sort((a,b)=>a-b);
+  renderBallsSequential(rb,nums,hot,'hot','cold',()=>{
+    panel.classList.add('visible');
+    document.getElementById('result-count-auto').textContent=`${hotCount} hay ra · ${6-hotCount} ít ra`;
+    btn.disabled=false;btn.textContent='🎰 QUAY LẠI';
+    addSpinHistory(nums);
+  });
+}
+
+/* ========== SPIN SMART ========== */
+function spinSmart(){
+  const btn=document.getElementById('smart-btn');
+  btn.disabled=true;btn.textContent='🔄 ĐANG TÍNH...';
+  const panel=document.getElementById('result-panel-smart');
+  const rb=document.getElementById('result-balls-smart');
+  rb.innerHTML='';panel.classList.remove('visible');
+
+  document.getElementById('smart-draws-warning').style.display=hasEnoughDraws()?'none':'block';
+
+  setTimeout(()=>{
+    // Generate candidates and pick best
+    let best=null,bestScore=-9999;
+    const CANDIDATES=500;
+    for(let i=0;i<CANDIDATES;i++){
+      const candidate=generateSmartCandidate();
+      const sc=scoreSet(candidate);
+      if(sc>bestScore){bestScore=sc;best=candidate;}
+    }
+    const nums=best.sort((a,b)=>a-b);
+    const hot=getHot();
+    const tags=buildScoredResult(nums);
+
+    renderBallsSequential(rb,nums,null,'smart','smart',()=>{
+      panel.classList.add('visible');
+      const total=sumArr(nums);
+      document.getElementById('result-count-smart').textContent=`Điểm tối ưu: ${bestScore}`;
+      const tagsEl=document.getElementById('smart-score-tags');
+      tagsEl.innerHTML=tags.map(t=>`<div class="stag ${t.ok?'ok':'warn'}">${t.label} ${t.sub}</div>`).join('');
+      btn.disabled=false;btn.textContent='🧠 QUAY LẠI';
+      addSmartHistory(nums);
+    });
+  },100);
+}
+
+function generateSmartCandidate(){
+  // Weighted pool based on absent + freq
+  const absent=calcAbsent();
+  const sorted=getSorted();
+  const pool=[];
+  sorted.forEach((d,rank)=>{
+    const ab=absent[d.n]||0;
+    // Tần suất là ưu tiên cao nhất
+    let w=1;
+    if(rank<10) w+=10;
+    else if(rank<20) w+=7;
+    else if(rank<threshold) w+=4;
+    else w=Math.max(1,w-1);
+    // Vắng lâu — ngưỡng ngọt 13–17 kỳ (P=12.73%)
+    if(ab>=16) w+=4;
+    else if(ab>=13) w+=6; // điểm ngọt nhất
+    else if(ab>=10) w+=3;
+    else if(ab>=6) w+=1;
+    else w=Math.max(1,w-1);
+    for(let j=0;j<w;j++) pool.push(d.n);
+  });
+
+  // Try to pick 6 satisfying constraints
+  for(let attempt=0;attempt<50;attempt++){
+    const picked=pickWeighted(pool,6);
+    if(!picked) continue;
+    const sorted6=picked.sort((a,b)=>a-b);
+    const evens=sorted6.filter(n=>isEven(n)).length;
+    const zones=[0,0,0];
+    sorted6.forEach(n=>zones[zone(n)]++);
+    const s=sumArr(sorted6);
+    const okEven=(evens===3);
+    const okZone=Math.min(...zones)>=1;
+    const okSum=s>=80&&s<=220;
+    if(okEven&&okZone&&okSum) return sorted6;
+  }
+  // fallback: pure random from pool
+  return pickWeighted(pool,6)||pickRandom([...Array(55)].map((_,i)=>i+1),6);
+}
+
+function pickWeighted(pool,n){
+  if(pool.length===0) return null;
+  const copy=[...pool];
+  const out=[];
+  const seen=new Set();
+  let tries=0;
+  while(out.length<n&&tries<1000){
+    tries++;
+    const idx=Math.floor(Math.random()*copy.length);
+    const v=copy[idx];
+    if(!seen.has(v)){seen.add(v);out.push(v);}
+  }
+  return out.length===n?out:null;
+}
+
+/* ========== BALL RENDERER ========== */
+function renderBallsSequential(container,nums,hotArr,hotCls,coldCls,onDone){
+  let delay=0;
+  nums.forEach((n,i)=>{
+    setTimeout(()=>{
+      const cls=hotArr?(hotArr.includes(n)?hotCls:coldCls):hotCls;
+      const ball=document.createElement('div');
+      ball.className=`res-ball ${cls}`;
+      ball.textContent=pad(n);
+      container.appendChild(ball);
+      if(i===nums.length-1) onDone();
+    },delay);
+    delay+=160;
+  });
+}
+
+/* ========== HISTORIES ========== */
+function addSpinHistory(nums){
+  const now=new Date();
+  const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  spinHistory.unshift({nums,time});
+  if(spinHistory.length>5)spinHistory.pop();
+  renderSpinHistory();
+  document.getElementById('spin-history-section').style.display='block';
+}
+function renderSpinHistory(){
+  const hot=getHot();
+  document.getElementById('spin-history-list').innerHTML=spinHistory.map(h=>`
+    <div class="history-item">
+      ${h.nums.map(n=>`<div class="history-num ${hot.includes(n)?'hot':'cold'}">${pad(n)}</div>`).join('')}
+      <div class="history-time">${h.time}</div>
+    </div>`).join('');
+}
+function clearSpinHistory(){
+  spinHistory=[];
+  document.getElementById('spin-history-section').style.display='none';
+  document.getElementById('spin-history-list').innerHTML='';
+}
+function addSmartHistory(nums){
+  const now=new Date();
+  const time=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  smartHistory.unshift({nums,time});
+  if(smartHistory.length>5)smartHistory.pop();
+  renderSmartHistory();
+  document.getElementById('smart-history-section').style.display='block';
+}
+function renderSmartHistory(){
+  document.getElementById('smart-history-list').innerHTML=smartHistory.map(h=>`
+    <div class="history-item">
+      ${h.nums.map(n=>`<div class="history-num" style="background:radial-gradient(circle at 35% 35%,#2ee89a,#0f6a42);color:white">${pad(n)}</div>`).join('')}
+      <div class="history-time">${h.time}</div>
+    </div>`).join('');
+}
+function clearSmartHistory(){
+  smartHistory=[];
+  document.getElementById('smart-history-section').style.display='none';
+  document.getElementById('smart-history-list').innerHTML='';
+}
+
+/* ========== MANUAL ========== */
+function buildManualBalls(){
+  const hot=getHot().sort((a,b)=>a-b);
+  const cold=getCold().sort((a,b)=>a-b);
+  document.getElementById('manual-hot-label').textContent=`top ${threshold} số`;
+  document.getElementById('manual-cold-label').textContent=`${55-threshold} số còn lại`;
+  const hotEl=document.getElementById('manual-hot');
+  const coldEl=document.getElementById('manual-cold');
+  hotEl.innerHTML='';coldEl.innerHTML='';
+  hot.forEach(n=>hotEl.appendChild(makeMBall(n,'hot')));
+  cold.forEach(n=>coldEl.appendChild(makeMBall(n,'cold')));
+  manualSelected.forEach(n=>document.getElementById('mball-'+n)?.classList.add('selected'));
+}
+function makeMBall(n,cls){
+  const b=document.createElement('div');
+  b.className=`ball ${cls}`;b.id=`mball-${n}`;
+  b.textContent=pad(n);
+  b.onclick=()=>toggleManual(n,b);
+  return b;
+}
+function toggleManual(n,el){
+  const idx=manualSelected.indexOf(n);
+  if(idx>=0){manualSelected.splice(idx,1);el.classList.remove('selected')}
+  else{if(manualSelected.length>=6)return;manualSelected.push(n);el.classList.add('selected')}
+  document.getElementById('manual-selected-count').textContent=manualSelected.length;
+}
+function clearManual(){
+  manualSelected.forEach(n=>document.getElementById('mball-'+n)?.classList.remove('selected'));
+  manualSelected=[];
+  document.getElementById('manual-selected-count').textContent=0;
+  document.getElementById('result-panel-manual').classList.remove('visible');
+}
+function confirmManual(){
+  if(manualSelected.length!==6){alert('Hãy chọn đúng 6 số!');return}
+  const hot=getHot();
+  const nums=[...manualSelected].sort((a,b)=>a-b);
+  document.getElementById('result-balls-manual').innerHTML=nums.map(n=>`<div class="res-ball ${hot.includes(n)?'hot':'cold'}">${pad(n)}</div>`).join('');
+  document.getElementById('result-panel-manual').classList.add('visible');
+}
+
+/* ========== DRAWS INPUT ========== */
+function buildDrawsGrid(){
+  const container=document.getElementById('draws-grid');
+  container.innerHTML='';
+  for(let k=0;k<NUM_DRAWS;k++){
+    const row=document.createElement('div');
+    row.className='draw-row';
+    row.innerHTML=`<div class="draw-label">Kỳ ${k+1}</div><div class="draw-inputs" id="draw-inputs-${k}"></div>`;
+    container.appendChild(row);
+    const inputsEl=document.getElementById(`draw-inputs-${k}`);
+    for(let j=0;j<7;j++){
+      const inp=document.createElement('input');
+      inp.type='number';inp.className='draw-inp';
+      inp.min=1;inp.max=55;inp.placeholder='--';
+      inp.id=`dinp-${k}-${j}`;
+      const saved=draws[k]&&draws[k][j];
+      if(saved){inp.value=saved;inp.classList.add('filled');}
+      inp.oninput=()=>onDrawInput(k,j,inp);
+      inp.onkeydown=(e)=>{if(e.key==='Enter'||e.key==='Tab'){}};
+      inputsEl.appendChild(inp);
+    }
+  }
+}
+
+function onDrawInput(k,j,inp){
+  const v=parseInt(inp.value);
+  inp.classList.remove('filled','err');
+  if(inp.value===''){
+    if(!draws[k]) draws[k]=[];
+    draws[k][j]=0;
+  } else if(isNaN(v)||v<1||v>55){
+    inp.classList.add('err');
+  } else {
+    if(!draws[k]) draws[k]=[];
+    draws[k][j]=v;
+    inp.classList.add('filled');
+  }
+  document.getElementById('draws-badge').classList.add('show');
+}
+
+function clearAllDraws(){
+  draws=[];
+  buildDrawsGrid();
+  document.getElementById('draws-badge').classList.add('show');
+}
+
+function saveDraws(){
+  // validate and clean
+  const cleaned=[];
+  let hasAny=false;
+  for(let k=0;k<NUM_DRAWS;k++){
+    const row=draws[k]||[];
+    const nums=row.filter(v=>v&&v>=1&&v<=55);
+    // check duplicates within row
+    const unique=[...new Set(nums)];
+    if(unique.length===7){
+      cleaned.push(unique);
+      hasAny=true;
+    } else {
+      cleaned.push(null);
+    }
+  }
+  draws=cleaned;
+  try{localStorage.setItem('vietlott_draws',JSON.stringify(draws))}catch(e){}
+  document.getElementById('draws-badge').classList.remove('show');
+  buildAbsentGrid();
+  showToast(`✓ Đã lưu ${draws.filter(d=>d).length}/${NUM_DRAWS} kỳ quay!`);
+}
+
+/* ========== ABSENT GRID ========== */
+function buildAbsentGrid(){
+  const validDraws=draws.filter(d=>d&&d.length===7);
+  const machine=document.getElementById('absent-machine');
+  if(validDraws.length===0){machine.style.display='none';return;}
+  machine.style.display='block';
+  const absent=calcAbsent();
+  const container=document.getElementById('absent-grid');
+  container.innerHTML='';
+  // Sort by absent count desc
+  const sorted=[...Array(55)].map((_,i)=>i+1).sort((a,b)=>absent[b]-absent[a]);
+  sorted.forEach(n=>{
+    const ab=absent[n];
+    const wrap=document.createElement('div');
+    wrap.className='absent-wrap';
+    let cls='ab-3';
+    if(ab>=NUM_DRAWS) cls='ab-0';      // vắng toàn bộ 16 kỳ - cực lạnh
+    else if(ab>=13) cls='ab-1';         // vắng 13-15 kỳ - điểm ngọt ★
+    else if(ab>=6) cls='ab-2';          // vắng 6-12 kỳ - theo dõi
+    wrap.innerHTML=`<div class="absent-ball ${cls}">${pad(n)}<span class="absent-count">${ab===NUM_DRAWS?'16+':ab+'k'}</span></div>`;
+    container.appendChild(wrap);
+  });
+}
+
+/* ========== STATS ========== */
+function onThresholdChange(){
+  const v=parseInt(document.getElementById('threshold-input').value)||28;
+  threshold=Math.min(54,Math.max(1,v));
+  document.getElementById('threshold-desc').textContent=`→ ${55-threshold} số còn lại = nhóm ít ra`;
+  document.getElementById('unsaved-badge').classList.add('show');
+  refreshStatColors();
+}
+function refreshStatColors(){
+  const sorted=getSorted();
+  const maxF=getMaxF();
+  sorted.forEach((d,i)=>{
+    const isHot=i<threshold;
+    document.getElementById('sball-'+d.n)?.setAttribute('class',`stat-ball ${isHot?'hot':'cold'}`);
+    const fill=document.getElementById('sfill-'+d.n);
+    if(fill){fill.style.background=isHot?'var(--red)':'#444460';fill.style.width=(d.f/maxF*100).toFixed(1)+'%';}
+    const rank=document.getElementById('srank-'+d.n);
+    if(rank) rank.textContent=i+1;
+  });
+}
+function buildStats(){
+  const sorted=getSorted();
+  const maxF=getMaxF();
+  const container=document.getElementById('stats-list');
+  container.innerHTML='';
+  document.getElementById('threshold-desc').textContent=`→ ${55-threshold} số còn lại = nhóm ít ra`;
+  // Fixed order 1 to 55
+  for(let num=1;num<=55;num++){
+    const d=workingData.find(x=>x.n===num);
+    if(!d) continue;
+    const rank=sorted.findIndex(x=>x.n===num);
+    const isHot=rank<threshold;
+    const pct=(d.f/maxF*100).toFixed(1);
+    const row=document.createElement('div');
+    row.className='stat-row';row.id='srow-'+d.n;
+    row.innerHTML=`
+      <div class="stat-rank" id="srank-${d.n}">${rank+1}</div>
+      <div class="stat-ball ${isHot?'hot':'cold'}" id="sball-${d.n}">${pad(d.n)}</div>
+      <div class="stat-bar-wrap" id="sbar-${d.n}" title="+1 | Giữ: −1">
+        <div class="stat-bar-fill" id="sfill-${d.n}" style="width:${pct}%;background:${isHot?'var(--red)':'#444460'}"></div>
+      </div>
+      <input type="number" class="stat-freq-input" id="sinput-${d.n}" value="${d.f}" min="0" max="999"
+        oninput="freqChange(${d.n},this.value)" onfocus="this.select()">
+    `;
+    container.appendChild(row);
+    attachBarEvents(row.querySelector('.stat-bar-wrap'), d.n);
+  }
+}
+function attachBarEvents(el, n){
+  let holdTimer=null;
+  let holdInterval=null;
+  let holdStart=0;
+  let didHold=false;
+
+  function startHold(e){
+    e.preventDefault();
+    didHold=false;
+    holdStart=Date.now();
+    holdTimer=setTimeout(()=>{
+      didHold=true;
+      // start subtracting: first -1 immediately, then accelerate
+      applyDelta(n,-1);
+      let speed=400;
+      function tick(){
+        applyDelta(n,-1);
+        const held=Date.now()-holdStart;
+        speed=held>3000?80:held>1500?160:held>800?250:400;
+        holdInterval=setTimeout(tick,speed);
+      }
+      holdInterval=setTimeout(tick,speed);
+    },400);
+  }
+
+  function endHold(e){
+    clearTimeout(holdTimer);
+    clearTimeout(holdInterval);
+    holdTimer=null;holdInterval=null;
+    if(!didHold){
+      // short tap = +1
+      applyDelta(n,+1);
+    }
+    didHold=false;
+  }
+
+  el.addEventListener('mousedown', startHold);
+  el.addEventListener('mouseup', endHold);
+  el.addEventListener('mouseleave', ()=>{ clearTimeout(holdTimer);clearTimeout(holdInterval);holdTimer=null;holdInterval=null; });
+  el.addEventListener('touchstart', startHold, {passive:false});
+  el.addEventListener('touchend', endHold);
+  el.addEventListener('touchcancel', ()=>{ clearTimeout(holdTimer);clearTimeout(holdInterval); });
+}
+
+function applyDelta(n, delta){
+  const d=workingData.find(x=>x.n===n);
+  if(!d) return;
+  d.f=Math.max(0,d.f+delta);
+  const inp=document.getElementById('sinput-'+n);
+  if(inp) inp.value=d.f;
+  document.getElementById('unsaved-badge').classList.add('show');
+  refreshStatColors();
+  // update bar width only (no reorder)
+  const maxF=getMaxF();
+  const pct=(d.f/maxF*100).toFixed(1);
+  const fill=document.getElementById('sfill-'+n);
+  if(fill) fill.style.width=pct+'%';
+  // update all bars proportionally
+  workingData.forEach(x=>{
+    const f2=document.getElementById('sfill-'+x.n);
+    if(f2) f2.style.width=(x.f/maxF*100).toFixed(1)+'%';
+  });
+  // update rank numbers
+  const sorted=getSorted();
+  sorted.forEach((x,i)=>{
+    const rank=document.getElementById('srank-'+x.n);
+    if(rank) rank.textContent=i+1;
+  });
+}
+
+function barClick(e,n){
+  // legacy - kept for safety but not used
+}
+function freqChange(n,val){
+  const d=workingData.find(x=>x.n===n);
+  if(!d) return;
+  const v=parseInt(val);
+  if(!isNaN(v)&&v>=0) d.f=v;
+  document.getElementById('unsaved-badge').classList.add('show');
+  reorderStats();
+}
+function reorderStats(){
+  // Fixed order — only update values, colors, ranks. No DOM reordering.
+  const sorted=getSorted();const maxF=getMaxF();
+  sorted.forEach((d,i)=>{
+    const isHot=i<threshold;
+    const pct=(d.f/maxF*100).toFixed(1);
+    const fill=document.getElementById('sfill-'+d.n);
+    if(fill){fill.style.width=pct+'%';fill.style.background=isHot?'var(--red)':'#444460'}
+    document.getElementById('sball-'+d.n)?.setAttribute('class',`stat-ball ${isHot?'hot':'cold'}`);
+    const rank=document.getElementById('srank-'+d.n);
+    if(rank) rank.textContent=i+1;
+    const inp=document.getElementById('sinput-'+d.n);
+    if(inp&&document.activeElement!==inp) inp.value=d.f;
+  });
+}
+function saveStats(){
+  document.getElementById('unsaved-badge').classList.remove('show');
+  try{
+    localStorage.setItem('vietlott_data',JSON.stringify(workingData));
+    localStorage.setItem('vietlott_threshold',threshold);
+  }catch(e){}
+  buildManualBalls();updateSlider();
+  renderSpinHistory();renderSmartHistory();
+  showToast('✓ Đã lưu & áp dụng tần suất!');
+}
+function resetStats(){
+  workingData=DEFAULT_DATA.map(d=>({...d}));
+  threshold=28;
+  document.getElementById('threshold-input').value=28;
+  try{localStorage.removeItem('vietlott_data');localStorage.removeItem('vietlott_threshold')}catch(e){}
+  buildStats();
+  document.getElementById('unsaved-badge').classList.remove('show');
+  buildManualBalls();updateSlider();
+  showToast('↺ Đã đặt lại về số liệu gốc!');
+}
+
+/* ========== LOCALSTORAGE ========== */
+function loadSaved(){
+  try{
+    const sd=localStorage.getItem('vietlott_data');
+    const st=localStorage.getItem('vietlott_threshold');
+    const sdr=localStorage.getItem('vietlott_draws');
+    if(sd){const p=JSON.parse(sd);if(Array.isArray(p)&&p.length===55) workingData=p;}
+    if(st){const t=parseInt(st);if(t>=1&&t<=54){threshold=t;document.getElementById('threshold-input').value=t;}}
+    if(sdr){const p=JSON.parse(sdr);if(Array.isArray(p)) draws=p;}
+    if(sd||sdr) showToast('📂 Đã tải dữ liệu đã lưu!');
+  }catch(e){}
+}
+
+/* ========== UI ========== */
+function switchMode(mode){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['auto','smart','manual','stats'][i]===mode));
+  document.querySelectorAll('.mode-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+mode).classList.add('active');
+  if(mode==='manual') buildManualBalls();
+}
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--gold);color:#1a1000;font-size:12px;font-weight:600;padding:9px 20px;border-radius:9px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap';document.body.appendChild(t)}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._to);t._to=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+/* ========== INIT ========== */
+loadSaved();
+updateSlider();
+buildManualBalls();
+buildStats();
+buildDrawsGrid();
+buildAbsentGrid();
+</script>
+</body>
+</html>
