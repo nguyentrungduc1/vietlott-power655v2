@@ -120,8 +120,17 @@ body::after{content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50
 .threshold-input{width:46px;background:var(--bg2);border:1px solid rgba(245,200,66,0.3);border-radius:6px;color:var(--gold);font-size:13px;font-weight:600;text-align:center;padding:3px;outline:none}
 .unsaved-badge{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(245,200,66,0.12);color:var(--gold);border:1px solid rgba(245,200,66,0.25);display:none}
 .unsaved-badge.show{display:inline-block}
-/* DRAWS INPUT */
-.draws-grid{display:flex;flex-direction:column;gap:6px}
+/* TODAY ROW */
+.today-row{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(245,200,66,0.08),rgba(232,25,44,0.06));border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:8px 10px;margin-bottom:.9rem;flex-wrap:wrap}
+.today-label{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.08em;white-space:nowrap;min-width:64px}
+.today-inputs{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.today-inp{width:38px;background:var(--bg2);border:1px solid rgba(245,200,66,0.35);border-radius:6px;color:var(--gold);font-size:12px;font-weight:700;text-align:center;padding:4px 2px;outline:none;transition:border-color .15s}
+.today-inp:focus{border-color:var(--gold);box-shadow:0 0 6px rgba(245,200,66,0.3)}
+.today-inp.filled{border-color:var(--gold);background:rgba(245,200,66,0.07)}
+.today-inp.err{border-color:var(--red);background:rgba(232,25,44,0.08)}
+.today-apply-btn{padding:6px 14px;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;border:1px solid var(--gold);background:var(--gold);color:#1a1000;transition:all .15s;white-space:nowrap}
+.today-apply-btn:hover{opacity:.85;transform:scale(1.03)}
+.today-apply-btn:active{transform:scale(.97)}
 .draw-row{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 10px}
 .draw-label{font-size:10px;color:var(--muted);width:28px;flex-shrink:0;font-weight:600}
 .draw-inputs{display:flex;gap:5px;flex:1;flex-wrap:wrap}
@@ -272,7 +281,15 @@ body::after{content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50
         Nhập kết quả 16 kỳ quay gần nhất
         <span class="unsaved-badge" id="draws-badge">● Chưa lưu</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:.75rem">Kỳ 1 = gần nhất. Mỗi kỳ nhập 7 số (1–55, gồm số Power). Dùng Tab để di chuyển nhanh.</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:.75rem">Ky 1 = gan nhat. Moi ky nhap 7 so (1-55, gom so Power). Dung Tab de di chuyen nhanh.</div>
+
+      <!-- KET QUA HOM NAY -->
+      <div class="today-row">
+        <div class="today-label">&#x1F4C5; Hom nay</div>
+        <div class="today-inputs" id="today-inputs"></div>
+        <button class="today-apply-btn" onclick="applyTodayDraw()">&#x21E9; Ap dung</button>
+      </div>
+
       <div class="draws-grid" id="draws-grid"></div>
       <div style="display:flex;gap:7px;margin-top:.9rem;flex-wrap:wrap;align-items:center">
         <button class="btn-sm" onclick="clearAllDraws()">Xóa trắng</button>
@@ -314,25 +331,46 @@ body::after{content:'';position:fixed;top:-20%;left:50%;transform:translateX(-50
 
 <script>
 /* ========== DEFAULT DATA ========== */
+// Tan suat 1 nam cap nhat 26/03/2026
 const DEFAULT_DATA=[
-  {n:16,f:24},{n:14,f:23},{n:19,f:22},{n:29,f:22},
-  {n:30,f:22},{n:41,f:22},{n:55,f:21},{n:22,f:21},
-  {n:26,f:20},{n:32,f:20},{n:34,f:20},{n:42,f:20},
-  {n:43,f:20},{n:48,f:20},{n:36,f:19},{n:40,f:19},
-  {n:24,f:19},{n:13,f:19},{n:3,f:19},{n:8,f:18},
-  {n:33,f:18},{n:27,f:18},{n:31,f:18},{n:45,f:18},
-  {n:53,f:17},{n:39,f:17},{n:44,f:17},{n:20,f:17},
-  {n:21,f:17},{n:9,f:17},{n:7,f:17},{n:12,f:17},
-  {n:5,f:16},{n:15,f:16},{n:10,f:16},{n:50,f:16},
-  {n:54,f:15},{n:46,f:15},{n:47,f:15},{n:52,f:15},
-  {n:11,f:15},{n:18,f:15},{n:23,f:14},{n:28,f:14},
-  {n:35,f:14},{n:17,f:14},{n:51,f:14},{n:37,f:14},
-  {n:38,f:13},{n:6,f:13},{n:2,f:13},{n:49,f:12},
-  {n:1,f:11},{n:25,f:11},{n:4,f:7}
+  {n:1,f:19},{n:2,f:16},{n:3,f:22},{n:4,f:10},
+  {n:5,f:21},{n:6,f:13},{n:7,f:21},{n:8,f:22},
+  {n:9,f:21},{n:10,f:22},{n:11,f:22},{n:12,f:20},
+  {n:13,f:23},{n:14,f:25},{n:15,f:17},{n:16,f:27},
+  {n:17,f:17},{n:18,f:21},{n:19,f:23},{n:20,f:19},
+  {n:21,f:23},{n:22,f:28},{n:23,f:16},{n:24,f:23},
+  {n:25,f:13},{n:26,f:25},{n:27,f:20},{n:28,f:18},
+  {n:29,f:26},{n:30,f:27},{n:31,f:23},{n:32,f:21},
+  {n:33,f:19},{n:34,f:26},{n:35,f:15},{n:36,f:22},
+  {n:37,f:19},{n:38,f:18},{n:39,f:21},{n:40,f:25},
+  {n:41,f:26},{n:42,f:23},{n:43,f:26},{n:44,f:20},
+  {n:45,f:24},{n:46,f:17},{n:47,f:20},{n:48,f:24},
+  {n:49,f:14},{n:50,f:21},{n:51,f:20},{n:52,f:19},
+  {n:53,f:22},{n:54,f:17},{n:55,f:24}
 ];
 const NUM_DRAWS=16;
 
 /* ========== STATE ========== */
+// 16 ky gan nhat (ky 1 = gan nhat = 26/03/2026)
+const DEFAULT_DRAWS=[
+  [3,9,10,34,38,44,51],   // ky 1  26/03/2026 #01324
+  [12,19,25,26,32,45,3],  // ky 2  24/03/2026 #01323
+  [1,6,40,43,47,53,3],    // ky 3  21/03/2026 #01322
+  [7,9,17,31,34,36,55],   // ky 4  19/03/2026 #01321
+  [12,26,28,43,50,54,52], // ky 5  17/03/2026 #01320
+  [7,16,27,29,47,52,26],  // ky 6  14/03/2026 #01319
+  [12,28,36,40,53,55,54], // ky 7  12/03/2026 #01318
+  [3,26,31,39,47,54,20],  // ky 8  10/03/2026 #01317
+  [4,32,41,45,50,52,29],  // ky 9  07/03/2026 #01316
+  [14,16,35,38,43,51,37], // ky 10 05/03/2026 #01315
+  [7,13,27,29,43,50,25],  // ky 11 03/03/2026 #01314
+  [22,25,31,44,51,54,36], // ky 12 28/02/2026 #01313
+  [1,7,10,21,44,51,46],   // ky 13 26/02/2026 #01312
+  [5,8,18,30,39,54,51],   // ky 14 24/02/2026 #01311
+  [5,7,26,30,41,45,12],   // ky 15 21/02/2026 #01310
+  [1,27,30,43,45,46,48],  // ky 16 19/02/2026 #01309
+];
+
 let workingData=DEFAULT_DATA.map(d=>({...d}));
 let threshold=28;
 let hotCount=3;
@@ -340,6 +378,7 @@ let spinHistory=[];
 let smartHistory=[];
 let manualSelected=[];
 let draws=[]; // array of 16 arrays of 7 nums each (or empty)
+let todayDraw=[0,0,0,0,0,0,0]; // ket qua hom nay (7 so)
 
 /* ========== HELPERS ========== */
 function pad(n){return String(n).padStart(2,'0')}
@@ -660,6 +699,107 @@ function confirmManual(){
   document.getElementById('result-panel-manual').classList.add('visible');
 }
 
+/* ========== TODAY DRAW ========== */
+function buildTodayInputs(){
+  const container=document.getElementById('today-inputs');
+  if(!container) return;
+  container.innerHTML='';
+  const labels=['S1','S2','S3','S4','S5','S6','Power'];
+  for(let j=0;j<7;j++){
+    const inp=document.createElement('input');
+    inp.type='number';inp.className='today-inp';
+    inp.min=1;inp.max=55;inp.placeholder=labels[j];
+    inp.id=`today-inp-${j}`;
+    inp.oninput=()=>{
+      const v=parseInt(inp.value);
+      inp.classList.remove('filled','err');
+      if(inp.value===''){ }
+      else if(isNaN(v)||v<1||v>55) inp.classList.add('err');
+      else inp.classList.add('filled');
+    };
+    container.appendChild(inp);
+  }
+}
+
+function applyTodayDraw(){
+  // Doc 7 so tu o nhap hom nay
+  const nums=[];
+  for(let j=0;j<7;j++){
+    const inp=document.getElementById(`today-inp-${j}`);
+    if(!inp) return;
+    const v=parseInt(inp.value);
+    if(isNaN(v)||v<1||v>55){showToast('Vui long nhap du 7 so hop le (1-55)!');return;}
+    nums.push(v);
+  }
+  // Kiem tra 6 so chinh (khong tinh Power) khong trung nhau
+  const main6=nums.slice(0,6);
+  if(new Set(main6).size!==6){showToast('6 so chinh khong duoc trung nhau!');return;}
+
+  // Shift draws: ky 1->2, 2->3, ..., 15->16 (ky 16 bi xoa)
+  draws=[nums,...draws.slice(0,NUM_DRAWS-1)];
+  try{localStorage.setItem('vietlott_draws',JSON.stringify(draws));}catch(e){}
+
+  // Cong +1 vao tan suat ca 7 so (6 chinh + Power)
+  nums.forEach(n=>{
+    const d=workingData.find(x=>x.n===n);
+    if(d) d.f+=1;
+  });
+  try{localStorage.setItem('vietlott_data',JSON.stringify(workingData));}catch(e){}
+
+  // Reset o nhap
+  for(let j=0;j<7;j++){
+    const inp=document.getElementById(`today-inp-${j}`);
+    if(inp){inp.value='';inp.classList.remove('filled','err');}
+  }
+
+  // Re-render (rebuild DOM bang tan suat truoc)
+  buildDrawsGrid();
+  buildAbsentGrid();
+  buildStats();
+  buildManualBalls();
+  updateSlider();
+  document.getElementById('unsaved-badge').classList.remove('show');
+
+  // Highlight SAU khi DOM da duoc paint xong (ca 7 so gom Power)
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      nums.forEach(n=>{
+        const fill=document.getElementById('sfill-'+n);
+        const ball=document.getElementById('sball-'+n);
+        const inp2=document.getElementById('sinput-'+n);
+        if(fill){
+          fill.style.transition='width .5s ease';
+          fill.style.filter='drop-shadow(0 0 4px var(--gold))';
+          setTimeout(()=>{ fill.style.filter=''; },2000);
+        }
+        if(ball){
+          ball.style.outline='2px solid var(--gold)';
+          ball.style.boxShadow='0 0 12px rgba(245,200,66,0.7)';
+          ball.style.transform='scale(1.15)';
+          ball.style.transition='transform .2s';
+          setTimeout(()=>{
+            ball.style.outline='';
+            ball.style.boxShadow='';
+            ball.style.transform='';
+          },2000);
+        }
+        if(inp2){
+          inp2.style.borderColor='var(--gold)';
+          inp2.style.color='var(--gold)';
+          inp2.style.fontWeight='800';
+          setTimeout(()=>{
+            inp2.style.borderColor='';
+            inp2.style.color='';
+            inp2.style.fontWeight='';
+          },2000);
+        }
+      });
+    });
+  });
+
+  showToast('\u2714 +1 tan suat cho: ' + nums.map(n=>String(n).padStart(2,'0')).join(', '));
+}
+
 /* ========== DRAWS INPUT ========== */
 function buildDrawsGrid(){
   const container=document.getElementById('draws-grid');
@@ -919,16 +1059,27 @@ function resetStats(){
 }
 
 /* ========== LOCALSTORAGE ========== */
+// Tang version nay moi khi cap nhat DEFAULT_DATA hoac DEFAULT_DRAWS
+const DATA_VERSION='v4_20260326';
+
 function loadSaved(){
   try{
+    // Neu version cu -> xoa sach, dung DEFAULT moi
+    const savedVer=localStorage.getItem('vietlott_version');
+    if(savedVer!==DATA_VERSION){
+      localStorage.removeItem('vietlott_data');
+      localStorage.removeItem('vietlott_draws');
+      localStorage.removeItem('vietlott_threshold');
+      localStorage.setItem('vietlott_version',DATA_VERSION);
+    }
     const sd=localStorage.getItem('vietlott_data');
     const st=localStorage.getItem('vietlott_threshold');
     const sdr=localStorage.getItem('vietlott_draws');
     if(sd){const p=JSON.parse(sd);if(Array.isArray(p)&&p.length===55) workingData=p;}
     if(st){const t=parseInt(st);if(t>=1&&t<=54){threshold=t;document.getElementById('threshold-input').value=t;}}
-    if(sdr){const p=JSON.parse(sdr);if(Array.isArray(p)) draws=p;}
-    if(sd||sdr) showToast('📂 Đã tải dữ liệu đã lưu!');
-  }catch(e){}
+    if(sdr){const p=JSON.parse(sdr);if(Array.isArray(p)&&p.length>0) draws=p;}
+    else{ draws=DEFAULT_DRAWS.map(r=>[...r]); }
+  }catch(e){ draws=DEFAULT_DRAWS.map(r=>[...r]); }
 }
 
 /* ========== UI ========== */
@@ -950,6 +1101,7 @@ loadSaved();
 updateSlider();
 buildManualBalls();
 buildStats();
+buildTodayInputs();
 buildDrawsGrid();
 buildAbsentGrid();
 </script>
